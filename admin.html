@@ -1,0 +1,664 @@
+<!DOCTYPE html>
+<html lang="bn">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DBF Tournament - Super Admin Panel</title>
+    <!-- Firebase SDKs (Compatibility Version) -->
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: #f0f2f5;
+            margin: 0;
+            color: #333;
+        }
+
+        .login-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .admin-wrapper {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        .sidebar {
+            width: 240px;
+            background-color: #1a2e3f;
+            color: white;
+            padding-top: 20px;
+            position: fixed;
+            height: 100%;
+            box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .sidebar h2 {
+            text-align: center;
+            margin-bottom: 30px;
+            font-weight: 600;
+        }
+
+        .sidebar-nav a {
+            display: block;
+            padding: 15px 25px;
+            color: #bdc3c7;
+            text-decoration: none;
+            font-size: 1em;
+            border-left: 4px solid transparent;
+            transition: all 0.3s ease;
+        }
+
+        .sidebar-nav a:hover,
+        .sidebar-nav a.active {
+            background-color: rgba(255, 255, 255, 0.05);
+            color: white;
+            border-left: 4px solid #3498db;
+        }
+
+        .main-content {
+            margin-left: 240px;
+            flex-grow: 1;
+            padding: 30px;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+        }
+
+        .card {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+            padding: 25px;
+            margin-bottom: 25px;
+        }
+
+        .card h3 {
+            margin-top: 0;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 15px;
+            font-size: 1.2em;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th,
+        td {
+            padding: 14px;
+            border-bottom: 1px solid #f0f0f0;
+            text-align: left;
+            vertical-align: middle;
+        }
+
+        th {
+            background-color: #f9fafb;
+            font-size: 0.9em;
+            color: #555;
+            text-transform: uppercase;
+        }
+
+        .btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.9em;
+            margin: 2px;
+            transition: opacity 0.2s;
+        }
+
+        .btn:hover {
+            opacity: 0.85;
+        }
+
+        .btn-primary {
+            background-color: #3498db;
+            color: white;
+        }
+
+        .btn-success {
+            background-color: #2ecc71;
+            color: white;
+        }
+
+        .btn-danger {
+            background-color: #e74c3c;
+            color: white;
+        }
+
+        .btn-warning {
+            background-color: #f39c12;
+            color: white;
+        }
+
+        .status {
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-weight: bold;
+            font-size: 0.8em;
+            text-transform: uppercase;
+        }
+
+        .status-pending {
+            background-color: #fef3c7;
+            color: #92400e;
+        }
+
+        .status-approved,
+        .status-paid {
+            background-color: #d1fae5;
+            color: #065f46;
+        }
+
+        .status-rejected {
+            background-color: #fee2e2;
+            color: #991b1b;
+        }
+
+        .content-section {
+            display: none;
+        }
+
+        .content-section.active {
+            display: block;
+        }
+
+        input,
+        select,
+        textarea {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 12px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            box-sizing: border-box;
+            font-size: 1em;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .method-card {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: #f9f9f9;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 10px;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 2000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0, 0, 0, 0.6);
+        }
+    </style>
+</head>
+
+<body>
+
+    <div id="loginSection" class="login-container">
+        <button id="loginBtn" class="btn btn-primary">Login with Google</button>
+    </div>
+
+    <div id="adminPanel" style="display:none;">
+        <div class="admin-wrapper">
+            <div class="sidebar">
+                <h2>Super Admin</h2>
+                <nav class="sidebar-nav">
+                    <a href="#" class="nav-item active" data-target="dashboard">ড্যাশবোর্ড</a>
+                    <a href="#" class="nav-item" data-target="users">ব্যবহারকারী</a>
+                    <a href="#" class="nav-item" data-target="tournaments">টুর্নামেন্ট</a>
+                    <a href="#" class="nav-item" data-target="requests">অনুরোধসমূহ</a>
+                    <a href="#" class="nav-item" data-target="transactions">লেনদেন</a>
+                    <a href="#" class="nav-item" data-target="settings">অ্যাপ সেটিংস</a>
+                </nav>
+            </div>
+            <div class="main-content">
+                <div class="header">
+                    <h2 id="pageTitle" style="font-size: 1.8em; font-weight: 600;">ড্যাশবোর্ড</h2>
+                    <button id="logoutBtn" class="btn btn-danger">Logout</button>
+                </div>
+
+                <!-- Dashboard Section -->
+                <div id="dashboard" class="content-section active">
+                    <div class="card">
+                        <h3>সারসংক্ষেপ</h3>
+                        <p>মোট ব্যবহারকারী: <b id="totalUsers">0</b></p>
+                        <p>মোট ব্যালেন্স (সকল ইউজারের): <b id="totalBalance">৳ 0</b></p>
+                        <p>পেন্ডিং অনুরোধ (টপ-আপ/উইথড্র/রুম): <b id="pendingRequests">0</b></p>
+                    </div>
+                </div>
+
+                <!-- Users Section -->
+                <div id="users" class="content-section">
+                    <div class="card">
+                        <h3>ব্যবহারকারী ম্যানেজমেন্ট</h3>
+                        <table id="usersTable">
+                            <thead>
+                                <tr>
+                                    <th>ইউজারনেম</th>
+                                    <th>ইমেইল</th>
+                                    <th>ব্যালেন্স</th>
+                                    <th>অ্যাকশন</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Tournaments Section -->
+                <div id="tournaments" class="content-section">
+                    <div class="card">
+                        <h3>টুর্নামেন্ট যোগ/এডিট করুন</h3>
+                        <form id="tournamentForm"><input type="hidden" id="t_editId"><input type="text" id="t_title"
+                                placeholder="টুর্নামেন্ট নাম" required><select id="t_type" required>
+                                <option value="">ধরন</option>
+                                <option value="Solo">Solo</option>
+                                <option value="Duo">Duo</option>
+                                <option value="Squad">Squad</option>
+                            </select><input type="datetime-local" id="t_startDate" required><input type="number"
+                                id="t_entryFee" placeholder="এন্ট্রি ফি" required><input type="number"
+                                id="t_playerLimit" placeholder="প্লেয়ার লিমিট" required><textarea id="t_description"
+                                placeholder="বিবরণ"></textarea><label><input type="checkbox" id="t_regEnabled" checked>
+                                Registration Enabled</label><button type="submit" class="btn btn-primary"
+                                id="addBtn">যোগ করুন</button><button type="submit" class="btn btn-success"
+                                id="updateBtn" style="display:none;">আপডেট করুন</button><button type="button"
+                                class="btn" id="cancelBtn" style="display:none;">বাতিল</button></form>
+                    </div>
+                    <div class="card">
+                        <h3>সকল টুর্নামেন্ট</h3>
+                        <div id="tournamentList"></div>
+                    </div>
+                </div>
+
+                <!-- Requests Section -->
+                <div id="requests" class="content-section">
+                    <div class="card">
+                        <h3>টপ-আপ অনুরোধ</h3>
+                        <table id="topupsTable">
+                            <thead>
+                                <tr>
+                                    <th>ইউজার</th>
+                                    <th>টাকা</th>
+                                    <th>মাধ্যম</th>
+                                    <th>নম্বর</th>
+                                    <th>TrxID</th>
+                                    <th>স্ট্যাটাস</th>
+                                    <th>অ্যাকশন</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                    <div class="card">
+                        <h3>উইথড্র অনুরোধ</h3>
+                        <table id="withdrawalsTable">
+                            <thead>
+                                <tr>
+                                    <th>ইউজার</th>
+                                    <th>টাকা</th>
+                                    <th>মাধ্যম</th>
+                                    <th>নম্বর</th>
+                                    <th>স্ট্যাটাস</th>
+                                    <th>অ্যাকশন</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                    <div class="card">
+                        <h3>কাস্টম রুম অনুরোধ</h3>
+                        <table id="customRoomsTable">
+                            <thead>
+                                <tr>
+                                    <th>ইউজার</th>
+                                    <th>ফি</th>
+                                    <th>মোড</th>
+                                    <th>কিভাবে খেলতে চায়</th>
+                                    <th>স্ট্যাটাস</th>
+                                    <th>অ্যাকশন</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Transactions Section -->
+                <div id="transactions" class="content-section">
+                    <div class="card">
+                        <h3>সকল লেনদেন</h3>
+                        <table id="transactionsTable">
+                            <thead>
+                                <tr>
+                                    <th>ইউজার</th>
+                                    <th>ধরন</th>
+                                    <th>টাকা</th>
+                                    <th>বিবরণ</th>
+                                    <th>স্ট্যাটাস</th>
+                                    <th>তারিখ</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Settings Section -->
+                <div id="settings" class="content-section">
+                    <div class="card">
+                        <h3>হোমপেজ ব্যানার</h3><input type="url" id="bannerImgUrl" placeholder="ব্যানার ইমেজ URL"><input
+                            type="url" id="bannerClickUrl" placeholder="ব্যানার ক্লিক URL (Optional)"><button
+                            class="btn btn-primary" onclick="updateBanner()">ব্যানার আপডেট</button>
+                    </div>
+                    <div class="card">
+                        <h3>পেমেন্ট মাধ্যম</h3>
+                        <h4>টপ-আপ মাধ্যম</h4>
+                        <div id="topupMethodsList"></div>
+                        <hr><input type="text" id="topup_name" placeholder="নাম (e.g., Bkash Personal)"><input
+                            type="text" id="topup_number" placeholder="নম্বর"><input type="text" id="topup_type"
+                            placeholder="নির্দেশনা (e.g., Send Money)"><button class="btn btn-success"
+                            onclick="addPaymentMethod('topup')">যোগ করুন</button>
+                        <hr style="margin: 20px 0;">
+                        <h4>উইথড্র মাধ্যম</h4>
+                        <div id="withdrawMethodsList"></div>
+                        <hr><input type="text" id="withdraw_name" placeholder="নাম (e.g., Rocket)"><button
+                            class="btn btn-success" onclick="addPaymentMethod('withdraw')">যোগ করুন</button>
+                    </div>
+                    <div class="card">
+                        <h3>শর্তাবলী (Terms & Conditions) ও অন্যান্য লেখা</h3><textarea id="terms_join" rows="2"
+                            placeholder="টুর্নামেন্টে জয়েনের শর্তাবলী"></textarea><textarea id="terms_custom" rows="2"
+                            placeholder="কাস্টম রুমের শর্তাবলী"></textarea><textarea id="terms_topup" rows="2"
+                            placeholder="টপ-আপের শর্তাবলী"></textarea><textarea id="terms_withdraw" rows="2"
+                            placeholder="উইথড্রর শর্তাবলী"></textarea><textarea id="contact_text" rows="2"
+                            placeholder="Contact Us লেখা"></textarea><button class="btn btn-primary"
+                            onclick="updateTexts()">লেখা সেভ করুন</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Participants Modal -->
+    <div id="participantsModal" class="modal">
+        <div class="card" style="width: 90%; max-width: 700px; margin: 5% auto; position: relative;">
+            <span onclick="document.getElementById('participantsModal').style.display='none'"
+                style="position:absolute; right:20px; top:15px; font-size:2em; cursor:pointer;">&times;</span>
+            <h3 id="participantsModalTitle">অংশগ্রহণকারীদের তালিকা</h3>
+            <div style="max-height: 70vh; overflow-y: auto;">
+                <table id="participantsTable">
+                    <thead>
+                        <tr>
+                            <th>অংশগ্রহণকারী (User)</th>
+                            <th>খেলোয়াড়দের তথ্য (Players)</th>
+                            <th>অংশগ্রহণের সময়</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+    // ----------- START: Firebase Config & Admin Emails -----------
+    const firebaseConfig = {
+        apiKey: "AIzaSyBP8ZPu2zEbRcLh_9SIxjn4WQNbA0xDgoY",
+        authDomain: "bdf-tournament.firebaseapp.com",
+        projectId: "bdf-tournament",
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+    const auth = firebase.auth();
+    // !!! খুবই গুরুত্বপূর্ণ: এখানে আপনার অ্যাডমিন ইমেইল যুক্ত করুন !!!
+    const adminEmails = ["mdmohonmolla69@gmail.com", "mdkk00291@gmail.com"]; 
+    // ----------- END: Firebase Config & Admin Emails -----------
+
+    // --- Authentication and Basic Setup ---
+    const loginSection = document.getElementById('loginSection'), adminPanel = document.getElementById('adminPanel');
+    auth.onAuthStateChanged(user => {
+        if (user && adminEmails.includes(user.email)) {
+            loginSection.style.display = 'none'; adminPanel.style.display = 'block'; initAdminPanel();
+        } else { loginSection.style.display = 'flex'; adminPanel.style.display = 'none'; }
+    });
+    document.getElementById('loginBtn').onclick = () => auth.signInWithPopup(new firebase.auth.GoogleAuthProvider());
+    document.getElementById('logoutBtn').onclick = () => auth.signOut();
+
+    function initAdminPanel() {
+        document.querySelectorAll('.nav-item').forEach(item => {
+            item.addEventListener('click', e => {
+                e.preventDefault(); const targetId = item.getAttribute('data-target');
+                document.querySelectorAll('.nav-item').forEach(nav => nav.classList.remove('active'));
+                item.classList.add('active');
+                document.querySelectorAll('.content-section').forEach(section => {
+                    section.classList.remove('active');
+                    if (section.id === targetId) {
+                        section.classList.add('active');
+                        document.getElementById('pageTitle').textContent = item.textContent;
+                    }
+                });
+            });
+        });
+        loadAllData();
+    }
+
+    function loadAllData() { loadDashboardStats(); loadUsers(); loadTournaments(); loadRequests(); loadTransactions(); loadSettings(); }
+    
+    // --- Caching and Helpers ---
+    const userCache = {};
+    async function getUsername(uid) {
+        if (!uid) return 'N/A'; if (userCache[uid]) return userCache[uid];
+        const userDoc = await db.collection('users').doc(uid).get();
+        const username = userDoc.exists ? userDoc.data().username || 'Unknown' : 'Unknown';
+        userCache[uid] = username; return username;
+    }
+
+    // --- Dashboard ---
+    async function loadDashboardStats() {
+        const usersSnap = await db.collection('users').get();
+        let totalBalance = 0; usersSnap.forEach(doc => totalBalance += doc.data().balance || 0);
+        document.getElementById('totalUsers').textContent = usersSnap.size;
+        document.getElementById('totalBalance').textContent = `৳ ${totalBalance.toFixed(2)}`;
+        const p_w = (await db.collection('withdraw_requests').where('status', '==', 'pending').get()).size;
+        const p_t = (await db.collection('topup_requests').where('status', '==', 'pending').get()).size;
+        const p_c = (await db.collection('custom_room_requests').where('status', '==', 'pending').get()).size;
+        document.getElementById('pendingRequests').textContent = p_w + p_t + p_c;
+    }
+
+    // --- User Management ---
+    function loadUsers() {
+        db.collection('users').orderBy('createdAt', 'desc').onSnapshot(snapshot => {
+            const tableBody = document.querySelector('#usersTable tbody'); tableBody.innerHTML = '';
+            snapshot.forEach(doc => {
+                const user = doc.data();
+                tableBody.innerHTML += `<tr><td><input type="text" value="${user.username || ''}" onchange="updateUserField('${doc.id}', 'username', this.value)"></td><td><input type="email" value="${user.email || ''}" onchange="updateUserField('${doc.id}', 'email', this.value)"></td><td><input type="number" step="0.01" value="${(user.balance || 0).toFixed(2)}" onchange="updateUserField('${doc.id}', 'balance', this.value, true)"></td><td><button class="btn btn-danger" onclick="deleteUser('${doc.id}')">Delete</button></td></tr>`;
+            });
+        });
+    }
+    function updateUserField(uid, field, value, isNumber = false) { if (!confirm("আপনি কি এই তথ্যটি পরিবর্তন করতে নিশ্চিত?")) return; const finalValue = isNumber ? parseFloat(value) : value; db.collection('users').doc(uid).update({ [field]: finalValue }).then(() => alert("তথ্য সফলভাবে আপডেট হয়েছে।")).catch(err => alert("ত্রুটি: "+ err.message)); }
+    function deleteUser(uid) { if (confirm("সতর্কতা! এই ইউজারকে ডিলিট করলে তার সকল তথ্য মুছে যাবে। আপনি কি নিশ্চিত?")) { db.collection('users').doc(uid).delete().then(() => alert("ইউজার সফলভাবে ডিলিট হয়েছে।")).catch(err => alert("ত্রুটি: "+ err.message)); } }
+
+    // --- Tournament Management (UPDATED) ---
+    const tournamentForm = document.getElementById('tournamentForm'); let t_editId = null;
+    function loadTournaments() {
+        db.collection('tournaments').orderBy('startDate', 'desc').onSnapshot(snapshot => {
+            const list = document.getElementById('tournamentList'); 
+            list.innerHTML = '';
+            
+            snapshot.forEach(async (doc) => {
+                const t = doc.data(); 
+                const tournamentId = doc.id;
+                const card = document.createElement('div'); 
+                card.className = 'card';
+
+                const joinsSnapshot = await db.collection('tournament_joins').where('tournamentId', '==', tournamentId).get();
+                const currentPlayers = joinsSnapshot.size;
+                let registrationStatus = t.registrationEnabled;
+                let statusText = registrationStatus ? '<span style="color:green;">চালু</span>' : '<span style="color:red;">বন্ধ</span>';
+
+                if (currentPlayers >= t.playerLimit && t.registrationEnabled) {
+                    db.collection('tournaments').doc(tournamentId).update({ registrationEnabled: false });
+                    statusText = '<span style="color:red;">পূর্ণ</span>';
+                }
+
+                card.innerHTML = `
+                    <h4 style="margin-bottom: 10px;">${t.title}</h4>
+                    <p style="font-weight: bold;">ধরন: ${t.type || 'N/A'}</p>
+                    <p>শুরু: ${new Date(t.startDate).toLocaleString()}</p>
+                    <p>এন্ট্রি ফি: ৳${t.entryFee}</p>
+                    <p>প্লেয়ার: ${currentPlayers} / ${t.playerLimit}</p>
+                    <p>রেজিস্ট্রেশন: ${statusText}</p>
+                    <div style="margin-top:15px;">
+                        <button class="btn btn-primary" onclick='viewParticipants("${tournamentId}", "${t.title}")'>View Participants</button>
+                        <button class="btn btn-warning" onclick='editTournament("${tournamentId}", ${JSON.stringify(t)})'>Edit</button>
+                        <button class="btn btn-danger" onclick="deleteTournament('${tournamentId}')">Delete</button>
+                    </div>`;
+                list.appendChild(card);
+            });
+        });
+    }
+    if(tournamentForm) { tournamentForm.addEventListener('submit', (e) => { e.preventDefault(); const data = { title: document.getElementById('t_title').value, type: document.getElementById('t_type').value, startDate: document.getElementById('t_startDate').value, entryFee: parseFloat(document.getElementById('t_entryFee').value), playerLimit: parseInt(document.getElementById('t_playerLimit').value), description: document.getElementById('t_description').value, registrationEnabled: document.getElementById('t_regEnabled').checked }; if (t_editId) { db.collection('tournaments').doc(t_editId).update(data).then(() => { alert("আপডেট হয়েছে!"); resetTournamentForm(); }).catch(err => alert("Error: " + err.message)); } else { db.collection('tournaments').add(data).then(() => { alert("যোগ হয়েছে!"); resetTournamentForm(); }).catch(err => alert("Error: " + err.message)); } }); }
+    window.editTournament = (id, data) => { t_editId = id; document.getElementById('t_title').value = data.title; document.getElementById('t_type').value = data.type; document.getElementById('t_startDate').value = data.startDate; document.getElementById('t_entryFee').value = data.entryFee; document.getElementById('t_playerLimit').value = data.playerLimit; document.getElementById('t_description').value = data.description; document.getElementById('t_regEnabled').checked = data.registrationEnabled; document.getElementById('addBtn').style.display = 'none'; document.getElementById('updateBtn').style.display = 'inline-block'; document.getElementById('cancelBtn').style.display = 'inline-block'; window.scrollTo(0, 0); };
+    window.deleteTournament = id => { if (confirm("আপনি কি এই টুর্নামেন্টটি ডিলিট করতে চান?")) { db.collection('tournaments').doc(id).delete(); } };
+    document.getElementById('cancelBtn').onclick = () => resetTournamentForm();
+    function resetTournamentForm() { t_editId = null; tournamentForm.reset(); document.getElementById('addBtn').style.display = 'inline-block'; document.getElementById('updateBtn').style.display = 'none'; document.getElementById('cancelBtn').style.display = 'none'; }
+    
+    // --- View Participants Function (UPDATED) ---
+    async function viewParticipants(tournamentId, tournamentTitle) {
+        const modal = document.getElementById('participantsModal');
+        const title = document.getElementById('participantsModalTitle');
+        const tableBody = document.querySelector('#participantsTable tbody');
+        title.textContent = `'${tournamentTitle}' - অংশগ্রহণকারীদের তালিকা`;
+        tableBody.innerHTML = '<tr><td colspan="3">লোড হচ্ছে...</td></tr>';
+        modal.style.display = 'block';
+        try {
+            const snapshot = await db.collection('tournament_joins').where('tournamentId', '==', tournamentId).orderBy('joinedAt', 'desc').get();
+            if (snapshot.empty) { tableBody.innerHTML = '<tr><td colspan="3">এখনো কেউ অংশগ্রহণ করেনি।</td></tr>'; return; }
+            tableBody.innerHTML = '';
+            const promises = snapshot.docs.map(doc => getUsername(doc.data().uid));
+            const usernames = await Promise.all(promises);
+            snapshot.docs.forEach((doc, index) => {
+                const joinData = doc.data(); const mainUsername = usernames[index];
+                let playersHtml = '<ul style="padding-left: 15px; margin: 0;">';
+                if (joinData.players && Array.isArray(joinData.players)) {
+                    joinData.players.forEach(player => { playersHtml += `<li><b>UID:</b> ${player.uid || 'N/A'} | <b>Name:</b> ${player.name || 'N/A'}</li>`; });
+                }
+                playersHtml += '</ul>';
+                const joinedAt = joinData.joinedAt ? new Date(joinData.joinedAt.seconds * 1000).toLocaleString() : 'N/A';
+                tableBody.innerHTML += `<tr><td>${mainUsername}</td><td>${playersHtml}</td><td>${joinedAt}</td></tr>`;
+            });
+        } catch (error) { console.error("Error fetching participants: ", error); tableBody.innerHTML = `<tr><td colspan="3">তালিকা লোড করতে সমস্যা হয়েছে: ${error.message}</td></tr>`; }
+    }
+
+    // --- Requests Management ---
+    function loadRequests() {
+        const collections = { topups: 'topup_requests', withdrawals: 'withdraw_requests', customRooms: 'custom_room_requests' };
+        for (const [key, col] of Object.entries(collections)) {
+            db.collection(col).orderBy('createdAt', 'desc').onSnapshot(async snapshot => {
+                const tableBody = document.querySelector(`#${key}Table tbody`); tableBody.innerHTML = '';
+                for (const doc of snapshot.docs) {
+                    const req = doc.data(); const username = await getUsername(req.uid); let row = `<tr><td>${username}</td>`;
+                    if (key === 'topups') row += `<td>৳${req.amount}</td><td>${req.medium}</td><td>${req.userNumber}</td><td>${req.trxId}</td>`;
+                    if (key === 'withdrawals') row += `<td>৳${req.amount}</td><td>${req.medium}</td><td>${req.userNumber}</td>`;
+                    if (key === 'customRooms') row += `<td>৳${req.entryAmount}</td><td>${req.mode}</td><td>${req.howToPlay}</td>`;
+                    const actions = req.status === 'pending' ? `<button class="btn btn-success" onclick="handleRequest('${col}','${doc.id}', 'approved')">Approve</button><button class="btn btn-danger" onclick="handleRequest('${col}', '${doc.id}', 'rejected')">Reject</button>` : 'N/A';
+                    row += `<td><span class="status status-${req.status}">${req.status}</span></td><td>${actions}</td></tr>`;
+                    tableBody.innerHTML += row;
+                }
+            });
+        }
+    }
+    async function handleRequest(collection, reqId, newStatus) {
+        if (!confirm(`আপনি কি এই অনুরোধটি '${newStatus}' করতে নিশ্চিত?`)) return;
+        const reqRef = db.collection(collection).doc(reqId); const reqDoc = await reqRef.get();
+        const { uid, amount, entryAmount } = reqDoc.data();
+        try {
+            const userRef = db.collection('users').doc(uid);
+            if (newStatus === 'approved') {
+                if (collection === 'topup_requests') { await userRef.update({ balance: firebase.firestore.FieldValue.increment(amount) }); }
+                await db.collection('transactions').doc(reqId).update({ status: 'approved' });
+            } else if (newStatus === 'rejected') {
+                if (collection === 'withdraw_requests' || collection === 'custom_room_requests') {
+                    const refundAmount = amount || entryAmount;
+                    await userRef.update({ balance: firebase.firestore.FieldValue.increment(refundAmount) });
+                    await db.collection('transactions').doc(reqId).update({ status: 'rejected', description: `Request Rejected & ৳${refundAmount} Refunded` });
+                } else { await db.collection('transactions').doc(reqId).update({ status: 'rejected' }); }
+            }
+            await reqRef.update({ status: newStatus }); alert(`অনুরোধটি সফলভাবে '${newStatus}' করা হয়েছে।`);
+        } catch(error) { alert("ত্রুটি: " + error.message); }
+    }
+
+    // --- Transactions Management ---
+    function loadTransactions() {
+        db.collection('transactions').orderBy('createdAt', 'desc').onSnapshot(async snapshot => {
+            const tableBody = document.querySelector('#transactionsTable tbody'); tableBody.innerHTML = '';
+            for (const doc of snapshot.docs) {
+                const tx = doc.data(); const username = await getUsername(tx.uid);
+                const date = tx.createdAt ? new Date(tx.createdAt.seconds * 1000).toLocaleString() : 'N/A';
+                tableBody.innerHTML += `<tr><td>${username}</td><td>${tx.type}</td><td>৳ ${tx.amount.toFixed(2)}</td><td>${tx.description}</td><td><span class="status status-${tx.status}">${tx.status}</span></td><td>${date}</td></tr>`;
+            }
+        });
+    }
+
+    // --- Settings Management ---
+    function loadSettings() {
+        db.collection('settings').doc('banner').onSnapshot(doc => { if(doc.exists) { document.getElementById('bannerImgUrl').value = doc.data().imageUrl || ''; document.getElementById('bannerClickUrl').value = doc.data().clickUrl || ''; } });
+        db.collection('settings').doc('paymentMethods').onSnapshot(doc => {
+            const lists = { topup: 'topupMethodsList', withdraw: 'withdrawMethodsList' };
+            for(const [type, listId] of Object.entries(lists)) {
+                const container = document.getElementById(listId); container.innerHTML = '';
+                if (doc.exists && doc.data()[type]) {
+                    doc.data()[type].forEach((m, i) => { let text = `<b>${m.name}</b>`; if(m.number) text += `: ${m.number}`; if(m.type) text += ` (${m.type})`; container.innerHTML += `<div class="method-card"><span>${text}</span><button class="btn btn-danger" onclick="deletePaymentMethod('${type}', ${i})">X</button></div>`; });
+                }
+            }
+        });
+        db.collection('settings').doc('texts').onSnapshot(doc => {
+            if(doc.exists) {
+                const texts = doc.data();
+                document.getElementById('terms_join').value = texts.joinText || ''; document.getElementById('terms_custom').value = texts.customText || '';
+                document.getElementById('terms_topup').value = texts.topupText || ''; document.getElementById('terms_withdraw').value = texts.withdrawText || '';
+                document.getElementById('contact_text').value = texts.contactText || '';
+            }
+        });
+    }
+    function updateBanner() { db.collection('settings').doc('banner').set({ imageUrl: document.getElementById('bannerImgUrl').value, clickUrl: document.getElementById('bannerClickUrl').value }).then(() => alert("ব্যানার আপডেট হয়েছে!")); }
+    function updateTexts() { db.collection('settings').doc('texts').set({ joinText: document.getElementById('terms_join').value, customText: document.getElementById('terms_custom').value, topupText: document.getElementById('terms_topup').value, withdrawText: document.getElementById('terms_withdraw').value, contactText: document.getElementById('contact_text').value, }).then(() => alert("লেখা আপডেট হয়েছে!")); }
+    async function addPaymentMethod(type) {
+        let newMethod = { name: document.getElementById(`${type}_name`).value };
+        if (type === 'topup') { newMethod.number = document.getElementById('topup_number').value; newMethod.type = document.getElementById('topup_type').value; }
+        if (!newMethod.name) return alert("নাম দিন!");
+        await db.collection('settings').doc('paymentMethods').set({ [type]: firebase.firestore.FieldValue.arrayUnion(newMethod) }, { merge: true });
+        if(type === 'topup') { document.getElementById('topup_name').value = ''; document.getElementById('topup_number').value = ''; document.getElementById('topup_type').value = ''; } else { document.getElementById('withdraw_name').value = ''; }
+    }
+    async function deletePaymentMethod(type, index) {
+        if (!confirm("ডিলিট করতে চান?")) return;
+        const docRef = db.collection('settings').doc('paymentMethods'); const doc = await docRef.get();
+        let methods = doc.data()[type]; methods.splice(index, 1); await docRef.update({ [type]: methods });
+    }
+</script>
+</body>
+
+</html>

@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DBF Tournament - হোম</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Header: Changes based on login state -->
+        <header class="header">
+            <div class="user-info logged-in-view" style="display: none;">
+                <h2 class="username">লোড হচ্ছে...</h2>
+                <p class="gmail">...</p>
+                <p class="balance current-balance">৳ 0.00</p>
+            </div>
+            <div class="logged-out-view" style="display: none;">
+                <h2>স্বাগতম!</h2>
+                <p>টুর্নামেন্টে অংশগ্রহণ করতে লগইন করুন।</p>
+                <button class="btn-join login-btn" style="margin-top: 10px;">Login with Google</button>
+            </div>
+        </header>
+
+        <main class="main-content">
+            <!-- Banner Section -->
+            <a id="banner-link" href="#" target="_blank" class="banner" style="display: block; margin-bottom: 20px;">
+                <img id="banner-image" src="" alt="Promotion Banner">
+            </a>
+
+            <!-- Tournaments Section -->
+            <section class="section">
+                <h3>চলমান ও আসন্ন টুর্নামেন্ট</h3>
+                <div id="tournament-list-homepage">
+                    <p>লোড হচ্ছে...</p>
+                </div>
+            </section>
+        </main>
+
+        <!-- Bottom Navigation -->
+        <nav class="bottom-nav">
+            <a href="index.html" class="nav-item active"><img src="https://img.icons8.com/ios-filled/24/home.png" alt="Home"><span>হোম</span></a>
+            <a href="tournaments.html" class="nav-item"><img src="https://img.icons8.com/ios-filled/24/trophy.png" alt="Tournaments"><span>টুর্নামেন্ট</span></a>
+            <a href="custom-room.html" class="nav-item"><img src="https://img.icons8.com/ios-filled/24/joystick.png" alt="Custom Room"><span>কাস্টম রুম</span></a>
+            <a href="transactions.html" class="nav-item"><img src="https://img.icons8.com/ios-filled/24/money-transfer.png" alt="Transactions"><span>লেনদেন</span></a>
+            <a href="profile.html" class="nav-item"><img src="https://img.icons8.com/ios-filled/24/user.png" alt="Profile"><span>প্রোফাইল</span></a>
+        </nav>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+    <script src="script.js"></script> 
+</body>
+</html>

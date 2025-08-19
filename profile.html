@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DBF Tournament - প্রোফাইল</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <header class="header"><h2>আমার প্রোফাইল</h2></header>
+
+        <main class="main-content">
+            <div class="logged-in-view" style="display: none;">
+                <section class="section profile-info">
+                    <p><strong>ইউজারনেম:</strong> <span class="username">...</span></p>
+                    <p><strong>ইমেইল:</strong> <span class="gmail">...</span></p>
+                    <p><strong>বর্তমান ব্যালেন্স:</strong> <span class="current-balance">...</span></p>
+                </section>
+                <section class="section profile-actions">
+                    <button class="btn btn-success" onclick="openModal('topupModal')">টপ-আপ করুন</button>
+                    <button class="btn btn-danger" onclick="openModal('withdrawModal')">উইথড্র করুন</button>
+                </section>
+                <section class="section profile-settings">
+                    <a class="setting-item" onclick="openModal('contactModal')">Contact Us</a>
+                    <a class="setting-item" onclick="openModal('termsModal')">Terms & Conditions</a>
+                    <div class="setting-item"><span>Dark Mode</span><label class="toggle-switch"><input type="checkbox" id="darkModeToggle"><span class="slider"></span></label></div>
+                </section>
+                <section class="section"><button class="btn btn-danger logout-btn">Logout</button></section>
+            </div>
+            <div class="logged-out-view section" style="display: none; text-align: center;">
+                <p>আপনার প্রোফাইল দেখতে অনুগ্রহ করে লগইন করুন।</p>
+                <button class="btn btn-primary login-btn" style="margin-top: 15px;">Login with Google</button>
+            </div>
+        </main>
+
+        <nav class="bottom-nav">
+            <a href="index.html" class="nav-item"><img src="https://img.icons8.com/ios-filled/24/home.png" alt="Home"><span>হোম</span></a>
+            <a href="tournaments.html" class="nav-item"><img src="https://img.icons8.com/ios-filled/24/trophy.png" alt="Tournaments"><span>টুর্নামেন্ট</span></a>
+            <a href="custom-room.html" class="nav-item"><img src="https://img.icons8.com/ios-filled/24/joystick.png" alt="Custom Room"><span>কাস্টম রুম</span></a>
+            <a href="transactions.html" class="nav-item"><img src="https://img.icons8.com/ios-filled/24/money-transfer.png" alt="Transactions"><span>লেনদেন</span></a>
+            <a href="profile.html" class="nav-item active"><img src="https://img.icons8.com/ios-filled/24/user.png" alt="Profile"><span>প্রোফাইল</span></a>
+        </nav>
+    </div>
+
+    <!-- All Modals for Profile Page -->
+    <div id="topupModal" class="modal"><div class="modal-content"><span class="modal-close" onclick="closeModal('topupModal')">&times;</span><h3>টপ-আপ করুন</h3><div class="modal-body"><form id="topupForm" class="form"><div class="form-group"><label>মাধ্যম</label><select name="medium" id="topup-medium" required></select></div><div class="form-group"><label>আপনার নম্বর</label><input type="text" name="userNumber" required></div><div class="form-group"><label>টাকার পরিমাণ</label><input type="number" name="amount" required></div><div class="form-group"><label>TrxID</label><input type="text" name="trxId" required></div><div class="form-group terms"><input type="checkbox" id="topup-terms" required><label for="topup-terms" id="topup-terms-label"></label></div><button type="submit" class="btn btn-primary">সাবমিট</button></form></div></div></div>
+    <div id="withdrawModal" class="modal"><div class="modal-content"><span class="modal-close" onclick="closeModal('withdrawModal')">&times;</span><h3>উইথড্র করুন</h3><div class="modal-body"><form id="withdrawForm" class="form"><div class="form-group"><label>মাধ্যম</label><select name="medium" id="withdraw-medium" required></select></div><div class="form-group"><label>আপনার মোবাইল নম্বর</label><input type="text" name="userNumber" required></div><div class="form-group"><label>টাকার পরিমাণ</label><input type="number" name="amount" required></div><div class="form-group terms"><input type="checkbox" id="withdraw-terms" required><label for="withdraw-terms" id="withdraw-terms-label"></label></div><button type="submit" class="btn btn-primary">সাবমিট</button></form></div></div></div>
+    <div id="contactModal" class="modal"><div class="modal-content"><span class="modal-close" onclick="closeModal('contactModal')">&times;</span><h3>Contact Us</h3><div class="modal-body" id="contact-text-body"></div></div></div>
+    <div id="termsModal" class="modal"><div class="modal-content"><span class="modal-close" onclick="closeModal('termsModal')">&times;</span><h3>Terms & Conditions</h3><div class="modal-body" id="terms-text-body"></div></div></div>
+
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>

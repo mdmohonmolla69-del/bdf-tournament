@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DBF Tournament - টুর্নামেন্ট</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <header class="header"><h2>সকল টুর্নামেন্ট</h2></header>
+
+        <main class="main-content">
+            <section class="section">
+                <div id="tournament-list-full"><p>লোড হচ্ছে...</p></div>
+            </section>
+        </main>
+
+        <nav class="bottom-nav">
+            <a href="index.html" class="nav-item"><img src="https://img.icons8.com/ios-filled/24/home.png" alt="Home"><span>হোম</span></a>
+            <a href="tournaments.html" class="nav-item active"><img src="https://img.icons8.com/ios-filled/24/trophy.png" alt="Tournaments"><span>টুর্নামেন্ট</span></a>
+            <a href="custom-room.html" class="nav-item"><img src="https://img.icons8.com/ios-filled/24/joystick.png" alt="Custom Room"><span>কাস্টম রুম</span></a>
+            <a href="transactions.html" class="nav-item"><img src="https://img.icons8.com/ios-filled/24/money-transfer.png" alt="Transactions"><span>লেনদেন</span></a>
+            <a href="profile.html" class="nav-item"><img src="https://img.icons8.com/ios-filled/24/user.png" alt="Profile"><span>প্রোফাইল</span></a>
+        </nav>
+    </div>
+
+    <!-- Tournament Join Modal -->
+    <div id="joinTournamentModal" class="modal">
+        <div class="modal-content">
+            <span class="modal-close" onclick="closeModal('joinTournamentModal')">&times;</span>
+            <h3>টুর্নামেন্টে অংশগ্রহণ করুন</h3>
+            <div class="modal-body">
+                <form id="joinTournamentForm" class="form">
+                    <input type="hidden" id="join_tournament_id"><input type="hidden" id="join_entry_fee">
+                    <p><strong>টুর্নামেন্ট:</strong> <span id="join_tournament_name"></span></p>
+                    <p><strong>ধরন:</strong> <span id="join_tournament_type"></span></p>
+                    <hr>
+                    <div id="player-fields-container"></div>
+                    <div class="form-group"><label>আপনার ইমেইল</label><input type="email" id="join-email" class="gmail" readonly></div>
+                    <div class="form-group terms"><input type="checkbox" id="join-terms" required><label for="join-terms" id="join-terms-label"></label></div>
+                    <button type="submit" class="btn btn-primary">Join Tournament</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
